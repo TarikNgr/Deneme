@@ -5,8 +5,6 @@ import tkinter.messagebox as mbox
 import tkinter as tk  # imported tkinter as tk
 import emoji
 
-# -----------------------------------------------------------------------------------------------
-
 
 class Keypad(tk.Frame):
 
