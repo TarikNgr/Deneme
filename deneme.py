@@ -1,346 +1,104 @@
+import tkinter as tk #provides a library of basic elements of GUI widgets
+from tkinter import messagebox #provides a different set of dialogues that are used to display message boxes
+import random
 
-import io  # used for dealing with input and output
-from tkinter import *  # importing the necessary libraries
-import tkinter.messagebox as mbox
-import tkinter as tk  # imported tkinter as tk
-import emoji
-  
-class Keypad(tk.Frame): 
+def check_winner(board, player):
+    # Check rows, columns, and diagonals for a win
+    for i in range(3):
+        if all(board[i][j] == player for j in range(3)) or all(board[j][i] == player for j in range(3)):
+            return True
+    if all(board[i][i] == player for i in range(3)) or all(board[i][2 - i] == player for i in range(3)):
+        return True
+    return False
 
-    
-    cells = [
-        ["😀", "🥰", "😴", "🤓", "🤮", "🤬", "😨", "🤑", "😫", "😎"],
-        [
-            "🐒",
-            "🐕",
-            "🐎",
-            "🐪",
-            "🐁",
-            "🐘",
-            "🦘",
-            "🦈",
-            "🐓",
-            "🐝",
-            "👀",
-            "🦴",
-            "👩🏿",
-            "‍🤝",
-            "🧑",
-            "🏾",
-            "👱🏽",
-            "‍♀",
-            "🎞",
-            "🎨",
-            "⚽",
-        ],
-        [
-            "🍕",
-            "🍗",
-            "🍜",
-            "☕",
-            "🍴",
-            "🍉",
-            "🍓",
-            "🌴",
-            "🌵",
-            "🛺",
-            "🚲",
-            "🛴",
-            "🚉",
-            "🚀",
-            "✈",
-            "🛰",
-            "🚦",
-            "🏳",
-            "‍🌈",
-            "🌎",
-            "🧭",
-        ],
-        [
-            "🔥",
-            "❄",
-            "🌟",
-            "🌞",
-            "🌛",
-            "🌝",
-            "🌧",
-            "🧺",
-            "🧷",
-            "🪒",
-            "⛲",
-            "🗼",
-            "🕌",
-            "👁",
-            "‍🗨",
-            "💬",
-            "™",
-            "💯",
-            "🔕",
-            "💥",
-            "❤",
-        ],
-    ]
+def is_board_full(board):
+    return all(all(cell != ' ' for cell in row) for row in board)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+def minimax(board, depth, is_maximizing):
+    if check_winner(board, 'X'):
+        return -1
+    if check_winner(board, 'O'):
+        return 1
+    if is_board_full(board): #if game is full, terminate
+        return 0
 
-        self.target = None
-        self.memory = ""
+    if is_maximizing: #recursive approach that fills board with Os
+        max_eval = float('-inf')
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == ' ':
+                    board[i][j] = 'O'
+                    eval = minimax(board, depth + 1, False) #recursion
+                    board[i][j] = ' '
+                    max_eval = max(max_eval, eval)
+        return max_eval
+    else: #recursive approach that fills board with Xs
+        min_eval = float('inf')
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == ' ':
+                    board[i][j] = 'X'
+                    eval = minimax(board, depth + 1, True) #recursion
+                    board[i][j] = ' '
+                    min_eval = min(min_eval, eval)
+        return min_eval
 
-        for y, row in enumerate(self.cells):
-            for x, item in enumerate(row):
-                b = tk.Button(
-                    self,
-                    text=item,
-                    command=lambda text=item: self.append(text),
-                    font=("Arial", 14),
-                    bg="yellow",
-                    fg="blue",
-                    borderwidth=3,
-                    relief="raised",
-                )
-                b.grid(row=y, column=x, sticky="news")
+#determines the best move for the current player and returns a tuple representing the position
+def best_move(board):
+    best_val = float('-inf')
+    best_move = None
 
-        x = tk.Button(
-            self,
-            text="Space",
-            command=self.space,
-            font=("Arial", 14),
-            bg="yellow",
-            fg="blue",
-            borderwidth=3,
-            relief="raised",
-        )
-        x.grid(row=0, column=10, columnspan="2", sticky="news")
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == ' ':
+                board[i][j] = 'O'
+                move_val = minimax(board, 0, False)
+                board[i][j] = ' '
+                if move_val > best_val:
+                    best_val = move_val
+                    best_move = (i, j)
 
-        x = tk.Button(
-            self,
-            text="tab",
-            command=self.tab,
-            font=("Arial", 14),
-            bg="yellow",
-            fg="blue",
-            borderwidth=3,
-            relief="raised",
-        )
-        x.grid(row=0, column=12, columnspan="2", sticky="news")
+    return best_move
 
-        x = tk.Button(
-            self,
-            text="Backspace",
-            command=self.backspace,
-            font=("Arial", 14),
-            bg="yellow",
-            fg="blue",
-            borderwidth=3,
-            relief="raised",
-        )
-        x.grid(row=0, column=14, columnspan="3", sticky="news")
-
-        x = tk.Button(
-            self,
-            text="Clear",
-            command=self.clear,
-            font=("Arial", 14),
-            bg="yellow",
-            fg="blue",
-            borderwidth=3,
-            relief="raised",
-        )
-        x.grid(row=0, column=17, columnspan="2", sticky="news")
-
-        x = tk.Button(
-            self,
-            text="Hide",
-            command=self.hide,
-            font=("Arial", 14),
-            bg="yellow",
-            fg="blue",
-            borderwidth=3,
-            relief="raised",
-        )
-        x.grid(row=0, column=19, columnspan="2", sticky="news")
-
-    def get(self):
-        if self.target:
-            return self.target.get()
-
-    def append(self, text):
-        if self.target:
-            self.target.insert("end", text)
-
-    def clear(self):
-        if self.target:
-            self.target.delete(0, END)
-
-    def backspace(self):
-        if self.target:
-            text = self.get()
-            text = text[:-1]
-            self.clear()
-            self.append(text)
-
-    def space(self):
-        if self.target:
-            text = self.get()
-            text = text + " "
-            self.clear()
-            self.append(text)
-
-    def tab(self):  # 5 spaces
-        if self.target:
-            text = self.get()
-            text = text + "     "
-            self.clear()
-            self.append(text)
-
-    def copy(self):
-        # TODO: copy to clipboad
-        if self.target:
-            self.memory = self.get()
-            self.label["text"] = "memory: " + self.memory
-            print(self.memory)
-
-    def paste(self):
-        # TODO: copy from clipboad
-        if self.target:
-            self.append(self.memory)
-
-    def show(self, entry):
-        self.target = entry
-
-        self.place(relx=0.5, rely=0.6, anchor="c")
-
-    def hide(self):
-        self.target = None
-
-        self.place_forget()
-
-
-# function defined th=o clear both the input text and output text --------------------------------------------------
-def clear_text():
-    inputentry.delete(0, END)
-    outputtxt.delete("1.0", "end")
-
-
-# function to search emoji
-def search_emoji():
-    word = inputentry.get()
-    if word == "":
-        outputtxt.insert(END, "You have entered no emoji.")
+def make_move(row, col):
+    if board[row][col] == ' ':
+        board[row][col] = 'X'
+        buttons[row][col].config(text='X')
+        if check_winner(board, 'X'):
+            messagebox.showinfo("Tic-Tac-Toe", "You win!")
+            root.quit()
+        elif is_board_full(board):
+            messagebox.showinfo("Tic-Tac-Toe", "It's a draw!")
+            root.quit()
+        else:
+            ai_move()
     else:
-        means = emoji.demojize(word)
-        outputtxt.insert(END, "Meaning of Emoji  :  " + str(word) + "\n\n" + means)
+        messagebox.showerror("Error", "Invalid move")
 
+#AI's turn to play
+def ai_move():
+    row, col = best_move(board)
+    board[row][col] = 'O'
+    buttons[row][col].config(text='O')
+    if check_winner(board, 'O'):
+        messagebox.showinfo("Tic-Tac-Toe", "AI wins!")
+        root.quit()
+    elif is_board_full(board):
+        messagebox.showinfo("Tic-Tac-Toe", "It's a draw!")
+        root.quit()
 
-# main window created
-window = tk.Tk()
-window.title("Emoji Dictionary")
-window.geometry("1000x700")
+root = tk.Tk()
+root.title("Tic-Tac-Toe")
 
-# for writing Dictionary label, at the top of window
-dic = tk.Label(
-    text="EMOJI DICTIONARY", font=("Arial", 50, "underline"), fg="magenta"
-)  # same way bg
-dic.place(x=160, y=10)
+board = [[' ' for _ in range(3)] for _ in range(3)]
+buttons = []
 
-start1 = tk.Label(
-    text="Enter any Emoji you want to search...", font=("Arial", 30), fg="green"
-)  # same way bg
-start1.place(x=160, y=120)
+for i in range(3):
+    row_buttons = []
+    for j in range(3):
+        button = tk.Button(root, text=' ', font=('normal', 30), width=5, height=2, command=lambda row=i, col=j: make_move(row, col))
+        button.grid(row=i, column=j)
+        row_buttons.append(button)
+    buttons.append(row_buttons)
 
-myname = StringVar(window)
-firstclick1 = True
-
-
-def on_inputentry_click(event):
-    """function that gets called whenever entry1 is clicked"""
-    global firstclick1
-
-    if firstclick1:  # if this is the first time they clicked it
-        firstclick1 = False
-        inputentry.delete(0, "end")  # delete all the text in the entry
-
-
-# Taking input from TextArea
-# inputentry = Entry(window,font=("Arial", 35), width=33, border=2)
-inputentry = Entry(
-    window, font=("Arial", 35), width=28, border=2, bg="light yellow", fg="brown"
-)
-inputentry.place(x=120, y=180)
-
-# # Creating Search Button
-Button(
-    window,
-    text="🔍 SEARCH",
-    command=search_emoji,
-    font=("Arial", 20),
-    bg="light green",
-    fg="blue",
-    borderwidth=3,
-    relief="raised",
-).place(x=270, y=250)
-
-# # creating clear button
-Button(
-    window,
-    text="🧹 CLEAR",
-    command=clear_text,
-    font=("Arial", 20),
-    bg="orange",
-    fg="blue",
-    borderwidth=3,
-    relief="raised",
-).place(x=545, y=250)
-
-# meaning label
-start1 = tk.Label(text="Meaning...", font=("Arial", 30), fg="green")  # same way bg
-start1.place(x=160, y=340)
-
-# # Output TextBox Creation
-outputtxt = tk.Text(
-    window,
-    height=7,
-    width=57,
-    font=("Arial", 17),
-    bg="light yellow",
-    fg="brown",
-    borderwidth=3,
-    relief="solid",
-)
-outputtxt.place(x=120, y=400)
-
-# function for exiting
-def exit_win():
-    if mbox.askokcancel("Exit", "Do you want to exit?"):
-        window.destroy()
-
-
-# # creating exit button
-Button(
-    window,
-    text="❌ EXIT",
-    command=exit_win,
-    font=("Arial", 20),
-    bg="red",
-    fg="black",
-    borderwidth=3,
-    relief="raised",
-).place(x=435, y=610)
-
-keypad = Keypad(window)
-
-# # creating speech to text button
-v_keypadb = Button(
-    window,
-    text="⌨",
-    command=lambda: keypad.show(inputentry),
-    font=("Arial", 18),
-    bg="light yellow",
-    fg="green",
-    borderwidth=3,
-    relief="raised",
-).place(x=870, y=183)
-
-window.protocol("WM_DELETE_WINDOW", exit_win)
-window.mainloop()
+root.mainloop()
