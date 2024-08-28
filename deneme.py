@@ -5,7 +5,7 @@ import tkinter.messagebox as mbox
 import tkinter as tk  # imported tkinter as tk
 import emoji
 
-
+name = "tarik"
 class Keypad(tk.Frame):
 
     cells = [
