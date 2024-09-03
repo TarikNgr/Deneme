@@ -1,7 +1,7 @@
 from tkinter import *
 from tkcalendar import Calendar
 import tkinter as tk
- 
+print()
       
 window = tk.Tk() 
 
