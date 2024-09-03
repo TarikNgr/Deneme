@@ -2,6 +2,7 @@ from tkinter import *
 from tkcalendar import Calendar
 import tkinter as tk
 
+
 window = tk.Tk()
 
 # Adjust size
