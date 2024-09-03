@@ -3,7 +3,7 @@ from tkcalendar import Calendar
 import tkinter as tk
  
 
-window = tk.Tk()
+window = tk.Tk() 
 
 # Adjust size
 window.geometry("600x500")
