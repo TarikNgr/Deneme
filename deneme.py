@@ -4,7 +4,7 @@ import tkinter as tk
 print()
          
 window = tk.Tk() 
-
+ 
 # Adjust size
 window.geometry("600x500")
 
