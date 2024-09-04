@@ -5,7 +5,7 @@ from queue import PriorityQueue
 
 # import time
 # from collections import Counter
-
+ 
 
 class Node:
     def __init__(self, state, depth=0, moves=None, optimizer=0):
