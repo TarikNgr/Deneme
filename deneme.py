@@ -7,7 +7,7 @@ from queue import PriorityQueue
 # from collections import Counter 
 
      
-class Node:
+class Node: 
     def __init__(self, state, depth=0, moves=None, optimizer=0):
         """
         Parameters:
